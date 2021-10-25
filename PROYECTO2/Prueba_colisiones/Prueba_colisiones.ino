@@ -34,6 +34,7 @@ uint8_t game_over;  //bandera para que el juego funcione
 int yataque, yataque2;
 int ataque_activo, ataque_activo2;
 int colision1, colision2;
+char  up2, down2, start2, com, com2, start1, up1, down1; 
 //estas variables sirven para controlar el movimiento de los ataques del jugador 2
 int a = 0; //
 int c = 0; //
@@ -67,6 +68,13 @@ const long interval = 42;
 void setup() {
   SysCtlClockSet(SYSCTL_SYSDIV_2_5|SYSCTL_USE_PLL|SYSCTL_OSC_MAIN|SYSCTL_XTAL_16MHZ);
   Serial.begin(9600);
+  Serial3.begin(9600);                          // Inicializar C. serial a 9600 bits per second
+  Serial2.begin(9600);
+  
+  Serial2.setTimeout(50);
+  Serial3.setTimeout(50);                        // T para la transf. de datos
+  delay(100);
+  
   GPIOPadConfigSet(GPIO_PORTB_BASE, 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7, GPIO_STRENGTH_8MA, GPIO_PIN_TYPE_STD_WPU);
   Serial.println("Start");
   LCD_Init();
@@ -106,23 +114,66 @@ void setup() {
 //***************************************************************************************************************************************
 void loop() {
   unsigned long currentMillis = millis();
-  
+    if (Serial3.available()){                      
+    com = Serial3.read();                   // Guardar lo leído en Message
+    Serial.write(com);                     // Escribir lo que se recibe
+ 
+  delay(4);
+  if(com == 0){                          // Recibe un 1
+      start1 = 1;                 // Start1
+      //song1();
+      //noTone(buzzerPin);
+      start1 = 0;
+  }
+    if(com == 1){                          // Recibe un 1
+      up1 = 1;                 //Up1
+      //song();
+      //noTone(buzzerPin);
+  }
+
+    if(com == 2){                          // Recibe un 2
+      down1 = 1;                  //Down1
+      //song();
+      //noTone(buzzerPin);
+  }
+
+   }
+   
+   if (Serial2.available()){                      
+    com2 = Serial2.read();                   // Guardar lo leído en Message
+    Serial.write(com2);                     // Escribir lo que se recibe
+ 
+  delay(4);
+  if(com2 == 0){                          // Recibe un 0
+      start2 = 1;                 //Start2
+  }
+    if(com2 == 1){                          // Recibe un 1
+      up2 = 1;                 //Up2
+
+  }
+
+    if(com2 == 2){                          // Recibe un 2
+      down2 = 1;                  //Down2
+  }
+
+   }
   // actualización de frame cada 42ms = 24fps
   if (currentMillis - previousMillis >= interval) {
     previousMillis = currentMillis;
-    bool ataque_ave = !digitalRead(PUSH1); // lectura de entradas
-    bool ataque_cactus = !digitalRead(PUSH2);
+    //bool ataque_ave = !digitalRead(PUSH1); // lectura de entradas
+    //bool ataque_cactus = !digitalRead(PUSH2);
+
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 //-----Control del ataque por medio de los botones-----------
 //---------------------------------------------------------------------------------------------------------------------------------------
     //Para cuando J2 ataca con ave
-    char ataque1 = ataque_ave;
-    if (ataque1 == 1) {//Los botones estan config. como Pull-Ups
+    if (up2 == 1) {//Los botones estan config. como Pull-Ups
       yataque = ave.y; 
       ataque_activo = 1;
       colision1 = 1;
       a = ave.x;
+      up2 = 0;  //esta condicion permite que salga del loop del ataque
       }  
     //se usa un ciclo para que el ataque vaya en linea recta desde la posicion de disparo
     if (ataque_activo == 1){
@@ -141,12 +192,12 @@ void loop() {
     //---------------------------------------------------------------------------------------------------------------------------- 
     //----------------------------------Para cuando J2 ataca con cactus-----------------------------------------------------------
     //Es la misma logica que en ataque de ave
-    char ataque2 = ataque_cactus;
-    if (ataque2 == 1) {
+    if (down2 == 1) {
       //int yataque2 = cactus.y;
       ataque_activo2 = 1;
       colision2 = 1;
       c = cactus.x;
+      down2 = 0;        //esta condicion permite salair del loop de ataque 
       }  
 
     if (ataque_activo2 == 1){
@@ -162,17 +213,17 @@ void loop() {
         }
     } 
 //      if (colision2  == 1 ) {
-//        int h = trex.y - nave.y; //se obtiene la posicion en el eje Y de dinosaurio respecto a ataque cactus
-//        int d = nave.x - alien.x; //se obtiene la posicion en el eje X de J1 respecto a J2
-//        int r = m2 - 81; //se obtiene la posicion en el eje X de J1 respecto al Ataque
-//        int hit2 = 0; //sirve para saber si el ataque impacto o no en J1
+//        int h = trex.y - cactus.y; //se obtiene la posicion en el eje Y de dinosaurio respecto a ataque cactus
+//        int d = trex.x - cactus.x; //se obtiene la posicion en el eje X del dinosaurio respecto a cactus
+//        int r = c - trex.width ; //se obtiene la posicion en el eje X del dinosaurio + su ancho respecto al Ataque de cactus
+//        int hit2 = 0; //sirve para saber si el ataque impacto o no al dinosaurio
 //        if ((r <= 0) & (d <= 0)) {
 //          hit2++; //para acertar el ataque el jugador viendo hacia la izquierda
 //        }
 //        //ambas distancias tienen que ser negativas.
-//        if ((((h < 30) & (h >= 0)) | (h <= 0) & (h > -21)) & (hit2 == 1))vida1++; //para acertar el personaje atacado
+//        if ((((h < cactus.height) & (h >= 0)) | (h <= 0) & (h > -21)) & (hit2 == 1)); //para acertar el personaje atacado
 //        //tiene que estar como máximo 29 unidades arriba del ataque y 21 por debajo del ataque
-//        LCD_Sprite(0, 0, 130, 26, vida_sprite, 3, vida1, 0, 0); //el sprite de la vida cambia solo si se cumplen la condiciones ant.
+//        
 //  
 //        if (hit2 == 1) {
 //          colision2 = 0;
