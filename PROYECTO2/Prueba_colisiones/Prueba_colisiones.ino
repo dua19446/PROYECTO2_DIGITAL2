@@ -86,13 +86,13 @@ void setup() {
 
   //dimensiones de cactus
   cactus.x = 290;
-  cactus.y = 120;
-  cactus.width = 24;
+  cactus.y = 165;
+  cactus.width = 48;
   cactus.height = 50;
 
   //dimensiones de ave
   ave.x = 290;
-  ave.y = 50;
+  ave.y = 70;
   ave.width = 52;
   ave.height = 45;
   ave.columns = 2;
@@ -127,11 +127,11 @@ void loop() {
     //se usa un ciclo para que el ataque vaya en linea recta desde la posicion de disparo
     if (ataque_activo == 1){
       int anim = (a / 32) % 3;
-      LCD_Sprite(a, yataque, ave.width, ave.height, aves, ave.columns, anim, 0, 0);
-      FillRect(a + 5, yataque, ave.width, ave.height, 0xFFFF); //con esto se borra el rastro que deja el ataque poniendo un cuadrado
+      LCD_Sprite(a , ave.y, ave.width, ave.height, aves, ave.columns, anim, 0, 0);
+      FillRect(a+ ave.width , ave.y, ave.width, ave.height, 0xFFFF); //con esto se borra el rastro que deja el ataque poniendo un cuadrado
       //con esto se hace avanzar al ataque
       a -= 5;  //esto es lo que permite que el sprite se vaya moviendo.
-      if (a > trex.width){ //mientras el ataque sea mayor al ancho del Trex va a seguir avanzando
+      if (a > 0 -35){ //mientras el ataque sea mayor al ancho del Trex va a seguir avanzando
         ataque_activo = 1;
         }
       else {
@@ -143,7 +143,7 @@ void loop() {
     //Es la misma logica que en ataque de ave
     char ataque2 = ataque_cactus;
     if (ataque2 == 1) {
-      int yataque2 = cactus.y;
+      //int yataque2 = cactus.y;
       ataque_activo2 = 1;
       colision2 = 1;
       c = cactus.x;
@@ -151,31 +151,33 @@ void loop() {
 
     if (ataque_activo2 == 1){
       int anim2 = (a / 32) % 3;
-      LCD_Sprite(c, yataque2, cactus.width, cactus.height, cactus1, 1, anim2, 0, 0);
-      FillRect(c + 5, yataque2, cactus.width, cactus.height, 0xFFFF); 
+      LCD_Sprite(c, cactus.y, cactus.width, cactus.height, cactus1, 1, anim2, 0, 0);
+      FillRect(c +cactus.width , cactus.y, cactus.width , cactus.height, 0xFFFF); 
       c -= 5;  
-      if (c > trex.width){ 
+      if (c > 0 - cactus.width){ 
         ataque_activo2 = 1;
         }
       else {
         ataque_activo2 = 0;
         }
     } 
-    
-    //----------------------------------------------------------------------------------------
-    //--------------Rutinas para comprobar que el ataque acerto-------------------------------
-    //Para el ataque del J2
-    if (colision1 == 1 ) {
-      FillRect(a, yataque, ave.width, ave.height, 0xFFFF);
-      int h = trex.y - yataque;
-      int d = trex.x - trex.y;
-      int r = a - trex.x;
-      int golpe = 0;
-      if ((((h < 39)& (d >= 0) & (h >= 0)) | (h <= 0) & (h > -24)) & (golpe == 1));
-        game_over = 1; //si el golpe acierta, acaba el juego
-
-      if (golpe == 1)colision1 = 0;
-    }
+//      if (colision2  == 1 ) {
+//        int h = trex.y - nave.y; //se obtiene la posicion en el eje Y de dinosaurio respecto a ataque cactus
+//        int d = nave.x - alien.x; //se obtiene la posicion en el eje X de J1 respecto a J2
+//        int r = m2 - 81; //se obtiene la posicion en el eje X de J1 respecto al Ataque
+//        int hit2 = 0; //sirve para saber si el ataque impacto o no en J1
+//        if ((r <= 0) & (d <= 0)) {
+//          hit2++; //para acertar el ataque el jugador viendo hacia la izquierda
+//        }
+//        //ambas distancias tienen que ser negativas.
+//        if ((((h < 30) & (h >= 0)) | (h <= 0) & (h > -21)) & (hit2 == 1))vida1++; //para acertar el personaje atacado
+//        //tiene que estar como máximo 29 unidades arriba del ataque y 21 por debajo del ataque
+//        LCD_Sprite(0, 0, 130, 26, vida_sprite, 3, vida1, 0, 0); //el sprite de la vida cambia solo si se cumplen la condiciones ant.
+//  
+//        if (hit2 == 1) {
+//          colision2 = 0;
+//        }
+//      }
     
   //----------------------------------------------------------------------------------------
   }
