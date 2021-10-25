@@ -49,6 +49,7 @@ uint8_t salto1 = 0;
 uint8_t velocidad = 0;
 uint8_t estadosalto = 0;
 uint8_t suelo = 1;
+int comenzar = 0;
 //***************************************************************************************************************************************
 // PROTOTIPOS DE FUNCIONES 
 //***************************************************************************************************************************************
@@ -69,6 +70,7 @@ void LCD_Sprite(int x, int y, int width, int height, unsigned char bitmap[],int 
 int AS_HE(int a);
 void mapeo(char documento[]);
 void movimiento();
+void salto();
 
 unsigned long previousMillis = 0;
 const long interval = 42;
@@ -111,10 +113,27 @@ void setup()
   LCD_Init();
   LCD_Clear(0x00);
 
-  while(start == 0)
+  
+  //LCD_Bitmap(0, 0, 320, 240, fondo_trex);
+  //LCD_Bitmap(0, 0, 320, 240, fondo_trex);
+  //LCD_Sprite(0, 160, 44, 56, trex_normal, 1, 0, 0, 0);
+}
+
+void loop() {
+  unsigned long currentMillis = millis();
+ 
+  if (currentMillis - previousMillis >= interval) {
+    previousMillis = currentMillis;
+
+  if(start == 0)
   {
     LCD_Bitmap(0, 0, 320, 240, fondo_trex);
+    FillRect(0, 0, 320, 240, 0xffff);
     LCD_Bitmap(175, 125, 85, 56, logo);
+    for(int x = 0; x <319; x++){
+     LCD_Bitmap(x, 216, 16, 16, tile);
+     x += 15;
+    }
     String text1 = "DINO JUMP";
     String text2 = "Pablo Moreno";
     String text3 = "Alejandro Duarte";
@@ -127,56 +146,61 @@ void setup()
     LCD_Print(text5, 60, 210, 2, 0xffff, 0x0000);
     if (digitalRead(PA_7) == 0){
         start = 1;
+        comenzar = 1;
         return;
      }
     for (int Nota = 0; Nota < 18; Nota++) 
     {
      if (digitalRead(PA_7) == 0){
         start = 1;
+        comenzar = 1;
         return;
      }
      int Duracion = 1000 / DuracionNotas[Nota];
      if (digitalRead(PA_7) == 0){
         start = 1;
+        comenzar = 1;
         return;
      }
      tone(PF_2, melody[Nota], Duracion); 
     if (digitalRead(PA_7) == 0){
         start = 1;
+        comenzar = 1;
         return;
      }
      int pausa = Duracion * 1.40;
      if (digitalRead(PA_7) == 0){
         start = 1;
+        comenzar = 1;
         return;
      }
         delay(pausa);
     if (digitalRead(PA_7) == 0){
         start = 1;
+        comenzar = 1;
         return;
      }
      noTone(PF_2);
     if (digitalRead(PA_7) == 0){
         start = 1;
+        comenzar = 1;
         return;
      }
     }
     if (digitalRead(PA_7) == 0){
         start = 1;
+        comenzar = 1;
         return;
      }
+     
+  }    
+  if (comenzar == 1){
+    
+    FillRect(0, 0, 320, 240, 0xffff);
+    FillRect(0, 216, 320, 30, 0x6b04);
+    comenzar = 0;
   }
-  //LCD_Bitmap(0, 0, 320, 240, fondo_trex);
-  //LCD_Sprite(0, 160, 44, 56, trex_normal, 1, 0, 0, 0);
-}
-
-void loop() {
-  unsigned long currentMillis = millis();
- if (start == 1){
-  if (currentMillis - previousMillis >= interval) {
-    previousMillis = currentMillis;
-
-    LCD_Bitmap(0, 0, 320, 240, fondo_trex);
+    
     if(altura_trx >= 160){
       suelo = 1;
     }
@@ -185,32 +209,23 @@ void loop() {
     }
     estadoboton = digitalRead(boton);
     
-    if (digitalRead(PA_7) == 1 && digitalRead(PUSH1) == 1){
+    if (digitalRead(PA_7) == 1 && digitalRead(PUSH1) == 1 && salto1 == 0 ){
         LCD_Sprite(0, 160, 44, 56, trex_c, 2, mov, 0, 0);
+        FillRect(44, 160, 44, 56, 0xffff);
+        FillRect(0, 155, 44, 5, 0xffff);
       //}
     }
     
     if (digitalRead(PA_7) == 0){
         LCD_Sprite(0, 183, 80, 32, trex_agachado, 2, mov, 0, 0); //para el dinosaurio corriendo parado
+        FillRect(0, 160, 44, 23, 0xffff);
     }
-
+    if (digitalRead(PUSH1) == 0){
+    LCD_Sprite(0, altura_trx, 44, 56, trex_c, 2, mov, 0, 0);
     salto();
+    }
     estadobotonviejo = estadoboton;
-    /*if (digitalRead(PUSH1) == 0){
-      for(int y = 160; y >60 ; y--){
-        delay(10);
-        LCD_Sprite(0, y, 44, 56, trex_normal, 1, 0, 0, 0);
-        H_line( 0, y+1, 44, 0xffff); 
-      }
-      for(int y = 60; y <160 ; y++){
-        delay(10);
-        LCD_Sprite(0, y, 44, 56, trex_normal, 1, 0, 0, 0);
-        H_line( 0, y+57, 44, 0xffff); 
-      }
-    }*/
     movimiento();
-    
-  }
  }    
 }
 //***************************************************************************************************************************************
@@ -636,11 +651,11 @@ void salto(){
   }
   if(suelo == 0){
     if( altura_trx<160 ){
-      bajada = 4;
+      bajada = 5;
     }
     velocidad = bajada;
-    //FillRect(0, altura_trx-velocidad, 44, velocidad, 0xffff);
-    LCD_Sprite(0, altura_trx-velocidad, 44, 56, trex_normal, 1, 0, 0, 0);
+    FillRect(0, altura_trx-velocidad, 44, velocidad, 0xffff);
+    //LCD_Sprite(0, altura_trx-velocidad, 44, 56, trex_normal, 1, 0, 0, 0);
     bajada1 = int(bajada);
     altura_trx+=bajada1;
     if(altura_trx > 160){
@@ -653,8 +668,8 @@ void salto(){
          bajada = -10;
          bajada1= int(bajada);
          altura_trx+=bajada1; 
-         //FillRect(0, altura_trx+10+16, 44, 32, 0xffff);
-         LCD_Sprite(0, altura_trx+10+16, 44, 56, trex_normal, 1, 0, 0, 0);
+         FillRect(0, altura_trx+10+16, 44, 32, 0xffff);
+         //LCD_Sprite(0, altura_trx+10+16, 44, 56, trex_normal, 1, 0, 0, 0);
          estadosalto ++;
         break;
 
@@ -662,8 +677,8 @@ void salto(){
          bajada = -10;
          bajada1= int(bajada);
          altura_trx+=bajada1; 
-        // FillRect(0, altura_trx+10+16, 44, 32, 0xffff);
-         LCD_Sprite(0, altura_trx+10+16, 44, 56, trex_normal, 1, 0, 0, 0);
+         FillRect(0, altura_trx+10+16, 44, 32, 0xffff);
+         //LCD_Sprite(0, altura_trx+10+16, 44, 56, trex_normal, 1, 0, 0, 0);
          estadosalto ++;
         break;
 
@@ -671,8 +686,8 @@ void salto(){
          bajada = -20;
          bajada1= int(bajada);
          altura_trx+=bajada1; 
-         //FillRect(0, altura_trx+20+16, 44, 32, 0xffff);
-         LCD_Sprite(0, altura_trx+20+16, 44, 56, trex_normal, 1, 0, 0, 0);
+         FillRect(0, altura_trx+20+16, 44, 32, 0xffff);
+         //LCD_Sprite(0, altura_trx+20+16, 44, 56, trex_normal, 1, 0, 0, 0);
          estadosalto ++;
         break;
 
@@ -680,8 +695,8 @@ void salto(){
          bajada = -15;
          bajada1= int(bajada);
          altura_trx+=bajada1; 
-        // FillRect(0, altura_trx+15+16, 44, 32, 0xffff);
-         LCD_Sprite(0, altura_trx+15+16, 44, 56, trex_normal, 1, 0, 0, 0);
+         FillRect(0, altura_trx+15+16, 44, 32, 0xffff);
+         //LCD_Sprite(0, altura_trx+15+16, 44, 56, trex_normal, 1, 0, 0, 0);
          estadosalto ++;
         break;
 
@@ -689,8 +704,8 @@ void salto(){
          bajada = -15;
          bajada1= int(bajada);
          altura_trx+=bajada1; 
-         //FillRect(0, altura_trx+15+16, 44, 32, 0xffff);
-         LCD_Sprite(0, altura_trx+15+16, 44, 56, trex_normal, 1, 0, 0, 0);
+         FillRect(0, altura_trx+15+16, 44, 32, 0xffff);
+         //LCD_Sprite(0, altura_trx+15+16, 44, 56, trex_normal, 1, 0, 0, 0);
          estadosalto ++;
         break;
 
@@ -698,8 +713,8 @@ void salto(){
          bajada = -10;
          bajada1= int(bajada);
          altura_trx+=bajada1; 
-        // FillRect(0, altura_trx+10+16, 44, 32, 0xffff);
-         LCD_Sprite(0, altura_trx+10+16, 44, 56, trex_normal, 1, 0, 0, 0);
+         FillRect(0, altura_trx+10+16, 44, 32, 0xffff);
+         //LCD_Sprite(0, altura_trx+10+16, 44, 56, trex_normal, 1, 0, 0, 0);
          estadosalto ++;
         break;
 
@@ -707,8 +722,8 @@ void salto(){
          bajada = -10;
          bajada1= int(bajada);
          altura_trx+=bajada1; 
-         //FillRect(0, altura_trx+10+16, 44, 32, 0xffff);
-         LCD_Sprite(0, altura_trx+10+16, 44, 56, trex_normal, 1, 0, 0, 0);
+         FillRect(0, altura_trx+10+16, 44, 32, 0xffff);
+         //LCD_Sprite(0, altura_trx+10+16, 44, 56, trex_normal, 1, 0, 0, 0);
          estadosalto ++;
         break;
 
@@ -716,8 +731,8 @@ void salto(){
          bajada = -10;
          bajada1= int(bajada);
          altura_trx+=bajada1; 
-         //FillRect(0, altura_trx+10+16, 44, 32, 0xffff);
-         LCD_Sprite(0, altura_trx+10+16, 44, 56, trex_normal, 1, 0, 0, 0);
+         FillRect(0, altura_trx+10+16, 44, 32, 0xffff);
+         //LCD_Sprite(0, altura_trx+10+16, 44, 56, trex_normal, 1, 0, 0, 0);
          estadosalto ++;
         break;
 
@@ -725,8 +740,8 @@ void salto(){
          bajada = -10;
          bajada1= int(bajada);
          altura_trx+=bajada1; 
-         //FillRect(0, altura_trx+10+16, 44, 32, 0xffff);
-         LCD_Sprite(0, altura_trx+10+16, 44, 56, trex_normal, 1, 0, 0, 0);
+         FillRect(0, altura_trx+10+16, 44, 32, 0xffff);
+         //LCD_Sprite(0, altura_trx+10+16, 44, 56, trex_normal, 1, 0, 0, 0);
          estadosalto ++;
         break;
 
@@ -734,8 +749,8 @@ void salto(){
          bajada = -10;
          bajada1= int(bajada);
          altura_trx+=bajada1; 
-         //FillRect(0, altura_trx+10+16, 44, 32, 0xffff);
-         LCD_Sprite(0, altura_trx+10+16, 44, 56, trex_normal, 1, 0, 0, 0);
+         FillRect(0, altura_trx+10+16, 44, 32, 0xffff);
+         //LCD_Sprite(0, altura_trx+10+16, 44, 56, trex_normal, 1, 0, 0, 0);
          salto1 = 0;
          estadosalto= 0;
         break;
