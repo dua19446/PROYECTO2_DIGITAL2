@@ -47,14 +47,14 @@ struct Sprite { // estructura para sprites
   int index; // indice sprite sheet
   //int flip; // voltear imagen
   int offset; // desfase
-} trex, ave;
+} trex, ave, cactus;
 
-struct obstaculos{ // estructura para rectangulos
-  int x; // posicion x
-  int y; // posicion y
-  int width; // ancho de rectángulo
-  int height; // altura de rectángulo
-} cactus;
+//struct obstaculos{ // estructura para rectangulos
+//  int x; // posicion x
+//  int y; // posicion y
+//  int width; // ancho de rectángulo
+//  int height; // altura de rectángulo
+//} cactus;
 
 bool rectUp = false; // dirección rectángulo
 bool collision = false; // detección de colisión
@@ -86,19 +86,20 @@ void setup() {
 
   //dimensiones de cactus
   cactus.x = 290;
-  cactus.y = 160;
-  cactus.width = 48;
+  cactus.y = 120;
+  cactus.width = 24;
   cactus.height = 50;
 
   //dimensiones de ave
   ave.x = 290;
-  ave.y = 190;
+  ave.y = 50;
   ave.width = 52;
   ave.height = 45;
   ave.columns = 2;
   ave.index = 0;
   ave.offset = 0;
 
+  FillRect(0, 0, 320, 290, 0xFFFF);
 }
 //***************************************************************************************************************************************
 // Loop
@@ -126,10 +127,10 @@ void loop() {
     //se usa un ciclo para que el ataque vaya en linea recta desde la posicion de disparo
     if (ataque_activo == 1){
       int anim = (a / 32) % 3;
-      LCD_Sprite(a, yataque, ave.width, ave.height, aves, ave.index, anim, 0, 0);
-      FillRect(a - 32, yataque, ave.width, ave.height, 0xFFFF); //con esto se borra el rastro que deja el ataque poniendo un cuadrado
+      LCD_Sprite(a, yataque, ave.width, ave.height, aves, ave.columns, anim, 0, 0);
+      FillRect(a + 5, yataque, ave.width, ave.height, 0xFFFF); //con esto se borra el rastro que deja el ataque poniendo un cuadrado
       //con esto se hace avanzar al ataque
-      a -= 32;  //esto es lo que permite que el sprite se vaya moviendo.
+      a -= 5;  //esto es lo que permite que el sprite se vaya moviendo.
       if (a > trex.width){ //mientras el ataque sea mayor al ancho del Trex va a seguir avanzando
         ataque_activo = 1;
         }
@@ -150,9 +151,9 @@ void loop() {
 
     if (ataque_activo2 == 1){
       int anim2 = (a / 32) % 3;
-      LCD_Sprite(c, yataque2, cactus.width, cactus.height, cactus1, 0, anim2, 0, 0);
-      FillRect(c - 32, yataque2, cactus.width, cactus.height, 0xFFFF); 
-      c -= 32;  
+      LCD_Sprite(c, yataque2, cactus.width, cactus.height, cactus1, 1, anim2, 0, 0);
+      FillRect(c + 5, yataque2, cactus.width, cactus.height, 0xFFFF); 
+      c -= 5;  
       if (c > trex.width){ 
         ataque_activo2 = 1;
         }
