@@ -58,14 +58,23 @@ void LCD_Sprite(int x, int y, int width, int height, unsigned char bitmap[],int 
 
 int AS_HE(int a);
 void mapeo(char documento[]);
-
+unsigned long previousMillis = 0;
+const long interval = 42;
 extern uint8_t fondo_trex[];
+extern uint8_t logo[];
 
 //***************************************************************************************************************************************
 // INICIALIZACION 
 //***************************************************************************************************************************************
 void setup() 
 {
+  //pinMode(PF_1, INPUT_PULLUP);
+  //pinMode(PF_3, INPUT_PULLUP);
+  //pinMode(PA_6, INPUT_PULLUP);
+  pinMode(PA_7, INPUT_PULLUP);
+  pinMode(PUSH1, INPUT_PULLUP);
+  //pinMode(PD_6, INPUT_PULLUP);
+  
   pinMode(PF_2, OUTPUT);
   Serial.begin(9600);
   SPI.setModule(0);
@@ -88,8 +97,7 @@ void setup()
   while(start == 0)
   {
     LCD_Bitmap(0, 0, 320, 240, fondo_trex);
-    LCD_Sprite(240, 100, 44, 56, trex_normal, 1, 0, 1, 0);
-    LCD_Sprite(180, 105, 48, 50, cactus1, 1, 0, 0, 0);
+    LCD_Bitmap(175, 125, 85, 56, logo);
     String text1 = "DINO JUMP";
     String text2 = "Pablo Moreno";
     String text3 = "Alejandro Duarte";
@@ -100,19 +108,86 @@ void setup()
     LCD_Print(text3, 10, 120, 1 , 0xffff, 0x0000);
     LCD_Print(text4, 10, 190, 2, 0xffff, 0x0000);
     LCD_Print(text5, 60, 210, 2, 0xffff, 0x0000);
+    if (digitalRead(PA_7) == 0){
+        start = 1;
+        return;
+     }
     for (int Nota = 0; Nota < 18; Nota++) 
     {
+     if (digitalRead(PA_7) == 0){
+        start = 1;
+        return;
+     }
      int Duracion = 1000 / DuracionNotas[Nota];
-     tone(PF_2, melody[Nota], Duracion);  
+     if (digitalRead(PA_7) == 0){
+        start = 1;
+        return;
+     }
+     tone(PF_2, melody[Nota], Duracion); 
+    if (digitalRead(PA_7) == 0){
+        start = 1;
+        return;
+     }
      int pausa = Duracion * 1.40;
+     if (digitalRead(PA_7) == 0){
+        start = 1;
+        return;
+     }
         delay(pausa);
+    if (digitalRead(PA_7) == 0){
+        start = 1;
+        return;
+     }
      noTone(PF_2);
+    if (digitalRead(PA_7) == 0){
+        start = 1;
+        return;
+     }
     }
+    if (digitalRead(PA_7) == 0){
+        start = 1;
+        return;
+     }
   }
+
+  //LCD_Bitmap(0, 0, 320, 240, fondo_trex);
+  //LCD_Sprite(0, 160, 44, 56, trex_normal, 1, 0, 0, 0);
 }
 
 void loop() {
+  unsigned long currentMillis = millis();
 
+  if (currentMillis - previousMillis >= interval) {
+    previousMillis = currentMillis;
+
+    LCD_Bitmap(0, 0, 320, 240, fondo_trex);
+    if (digitalRead(PA_7) == 1 && digitalRead(PUSH1) == 1){
+      for(int x = 0; x <32; x++){
+        delay(10);
+        int Dino_index_c = (x/5)%4;
+        LCD_Sprite(0, 160, 44, 56, trex_c, 2, Dino_index_c, 0, 0);
+      }
+    }
+    if (digitalRead(PA_7) == 0){
+      for(int x_1 = 0; x_1 <32; x_1++){
+        delay(10);
+        int Dino_index_a = (x_1/5)%4;
+        LCD_Sprite(0, 183, 80, 32, trex_agachado, 2, Dino_index_a, 0, 0); //para el dinosaurio corriendo parado
+      }
+    }
+    if (digitalRead(PUSH1) == 0){
+      for(int y = 160; y >60 ; y--){
+        delay(10);
+        LCD_Sprite(0, y, 44, 56, trex_normal, 1, 0, 0, 0);
+        H_line( 0, y+1, 44, 0xffff); 
+      }
+      for(int y = 60; y <160 ; y++){
+        delay(10);
+        LCD_Sprite(0, y, 44, 56, trex_normal, 1, 0, 0, 0);
+        H_line( 0, y+57, 44, 0xffff); 
+      }
+    }
+  }   
 }
 //***************************************************************************************************************************************
 // Función para inicializar LCD
