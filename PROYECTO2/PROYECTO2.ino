@@ -793,7 +793,7 @@ void salto(){
   }
   if(suelo == 0){
     if( altura_trx<160 ){
-      bajada = 5;
+      bajada = 2;
     }
     velocidad = bajada;
     FillRect(0, altura_trx-velocidad, 44, velocidad, 0xffff);
@@ -810,7 +810,7 @@ void salto(){
          bajada = -10;
          bajada1= int(bajada);
          altura_trx+=bajada1; 
-         FillRect(0, altura_trx+10+16, 44, 32, 0xffff);
+         FillRect(0, altura_trx+10+20, 44, 32, 0xffff);
          //LCD_Sprite(0, altura_trx+10+16, 44, 56, trex_normal, 1, 0, 0, 0);
          estadosalto ++;
         break;
@@ -819,7 +819,7 @@ void salto(){
          bajada = -10;
          bajada1= int(bajada);
          altura_trx+=bajada1; 
-         FillRect(0, altura_trx+10+16, 44, 32, 0xffff);
+         FillRect(0, altura_trx+10+20, 44, 32, 0xffff);
          //LCD_Sprite(0, altura_trx+10+16, 44, 56, trex_normal, 1, 0, 0, 0);
          estadosalto ++;
         break;
@@ -828,7 +828,7 @@ void salto(){
          bajada = -20;
          bajada1= int(bajada);
          altura_trx+=bajada1; 
-         FillRect(0, altura_trx+20+16, 44, 32, 0xffff);
+         FillRect(0, altura_trx+20+20, 44, 32, 0xffff);
          //LCD_Sprite(0, altura_trx+20+16, 44, 56, trex_normal, 1, 0, 0, 0);
          estadosalto ++;
         break;
@@ -837,7 +837,7 @@ void salto(){
          bajada = -15;
          bajada1= int(bajada);
          altura_trx+=bajada1; 
-         FillRect(0, altura_trx+15+16, 44, 32, 0xffff);
+         FillRect(0, altura_trx+15+20, 44, 32, 0xffff);
          //LCD_Sprite(0, altura_trx+15+16, 44, 56, trex_normal, 1, 0, 0, 0);
          estadosalto ++;
         break;
@@ -846,7 +846,7 @@ void salto(){
          bajada = -15;
          bajada1= int(bajada);
          altura_trx+=bajada1; 
-         FillRect(0, altura_trx+15+16, 44, 32, 0xffff);
+         FillRect(0, altura_trx+15+20, 44, 32, 0xffff);
          //LCD_Sprite(0, altura_trx+15+16, 44, 56, trex_normal, 1, 0, 0, 0);
          estadosalto ++;
         break;
@@ -855,7 +855,7 @@ void salto(){
          bajada = -10;
          bajada1= int(bajada);
          altura_trx+=bajada1; 
-         FillRect(0, altura_trx+10+16, 44, 32, 0xffff);
+         FillRect(0, altura_trx+10+20, 44, 32, 0xffff);
          //LCD_Sprite(0, altura_trx+10+16, 44, 56, trex_normal, 1, 0, 0, 0);
          estadosalto ++;
         break;
@@ -864,7 +864,7 @@ void salto(){
          bajada = -10;
          bajada1= int(bajada);
          altura_trx+=bajada1; 
-         FillRect(0, altura_trx+10+16, 44, 32, 0xffff);
+         FillRect(0, altura_trx+10+20, 44, 32, 0xffff);
          //LCD_Sprite(0, altura_trx+10+16, 44, 56, trex_normal, 1, 0, 0, 0);
          estadosalto ++;
         break;
@@ -873,7 +873,7 @@ void salto(){
          bajada = -10;
          bajada1= int(bajada);
          altura_trx+=bajada1; 
-         FillRect(0, altura_trx+10+16, 44, 32, 0xffff);
+         FillRect(0, altura_trx+10+20, 44, 32, 0xffff);
          //LCD_Sprite(0, altura_trx+10+16, 44, 56, trex_normal, 1, 0, 0, 0);
          estadosalto ++;
         break;
@@ -882,7 +882,7 @@ void salto(){
          bajada = -10;
          bajada1= int(bajada);
          altura_trx+=bajada1; 
-         FillRect(0, altura_trx+10+16, 44, 32, 0xffff);
+         FillRect(0, altura_trx+10+20, 44, 32, 0xffff);
          //LCD_Sprite(0, altura_trx+10+16, 44, 56, trex_normal, 1, 0, 0, 0);
          estadosalto ++;
         break;
@@ -891,7 +891,7 @@ void salto(){
          bajada = -10;
          bajada1= int(bajada);
          altura_trx+=bajada1; 
-         FillRect(0, altura_trx+10+16, 44, 32, 0xffff);
+         FillRect(0, altura_trx+10+20, 44, 32, 0xffff);
          //LCD_Sprite(0, altura_trx+10+16, 44, 56, trex_normal, 1, 0, 0, 0);
          salto1 = 0;
          estadosalto= 0;
