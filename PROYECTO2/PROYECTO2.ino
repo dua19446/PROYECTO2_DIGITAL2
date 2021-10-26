@@ -1,4 +1,4 @@
-//***************************************************************************************************************************************
+//*********************************************
 #include <SPI.h>
 #include <SD.h>
 
@@ -25,6 +25,35 @@ File archivo;
 #include "font.h"
 #include "lcd_registers.h"
 
+extern uint8_t aves[];
+extern uint8_t trex_c[];
+extern uint8_t cactus1[];
+int yataque, yataque2;
+int ataque_activo, ataque_activo2;
+int colision1, colision2;
+uint8_t game_over = 0;  //bandera para que el juego funcione
+char  up2, down2, start2, com, com2, start1, up1, down1; 
+//estas variables sirven para controlar el movimiento de los ataques del jugador 2
+int a = 0; //
+int c = 0; //
+//---------------------------------------------------------------------------------
+struct Sprite { // estructura para sprites
+  int x; // posicion x
+  int y; // posicion y
+  int width; // ancho de bitmap
+  int height; // altura de bitmap
+  int columns; // columna sprite sheet
+  int index; // indice sprite sheet
+  //int flip; // voltear imagen
+  int offset; // desfase
+} trex, ave, cactus;
+
+bool rectUp = false; // dirección rectángulo
+bool collision = false; // detección de colisión
+
+int arriba = 0;
+int saltando = 1;
+
 #define LCD_RST PD_0
 #define LCD_CS PD_1
 #define LCD_RS PD_2
@@ -50,9 +79,9 @@ uint8_t velocidad = 0;
 uint8_t estadosalto = 0;
 uint8_t suelo = 1;
 int comenzar = 0;
-//***************************************************************************************************************************************
+//*********************************************
 // PROTOTIPOS DE FUNCIONES 
-//***************************************************************************************************************************************
+//*********************************************
 void LCD_Init(void);
 void LCD_CMD(uint8_t cmd);
 void LCD_DATA(uint8_t data);
@@ -80,18 +109,18 @@ extern uint8_t logo[];
 uint8_t estadobotonviejo = 0;
 uint8_t estadoboton = 0;
 
-const int boton = PUSH1;
+const int boton = PA_6;
 
-//***************************************************************************************************************************************
+//*********************************************
 // INICIALIZACION 
-//***************************************************************************************************************************************
+//*********************************************
 void setup() 
 {
   //pinMode(PF_1, INPUT_PULLUP);
   //pinMode(PF_3, INPUT_PULLUP);
-  //pinMode(PA_6, INPUT_PULLUP);
-  pinMode(PA_7, INPUT_PULLUP);
   pinMode(boton, INPUT_PULLUP);
+  pinMode(PA_7, INPUT_PULLUP);
+  //pinMode(PUSH1, INPUT_PULLUP);
   //pinMode(PD_6, INPUT_PULLUP);
   
   pinMode(PF_2, OUTPUT);
@@ -107,27 +136,70 @@ void setup()
   Serial.println("card initialized.");
 
   SysCtlClockSet(SYSCTL_SYSDIV_2_5|SYSCTL_USE_PLL|SYSCTL_OSC_MAIN|SYSCTL_XTAL_16MHZ);
-  Serial.begin(9600);
+  Serial.begin(9600);                          // Inicializar C. serial a 9600 bits per second
+  Serial2.begin(9600);
+  
+  Serial2.setTimeout(50);                       // T para la transf. de datos
+  delay(100);
   GPIOPadConfigSet(GPIO_PORTB_BASE, 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7, GPIO_STRENGTH_8MA, GPIO_PIN_TYPE_STD_WPU);
   Serial.println("Start");
   LCD_Init();
   LCD_Clear(0x00);
 
-  
-  //LCD_Bitmap(0, 0, 320, 240, fondo_trex);
-  //LCD_Bitmap(0, 0, 320, 240, fondo_trex);
-  //LCD_Sprite(0, 160, 44, 56, trex_normal, 1, 0, 0, 0);
+  //dimensiones de Trex
+  trex.x = 0;
+  trex.y = 160;
+  trex.width = 44;
+  trex.height = 56;
+  trex.columns = 2;
+  trex.index = 0;
+  trex.offset = 0;
+
+  //dimensiones de cactus
+  cactus.x = 290;
+  cactus.y = 165;
+  cactus.width = 48;
+  cactus.height = 50;
+
+  //dimensiones de ave
+  ave.x = 290;
+  ave.y = 70;
+  ave.width = 52;
+  ave.height = 45;
+  ave.columns = 2;
+  ave.index = 0;
+  ave.offset = 0;
+
 }
 
 void loop() {
   unsigned long currentMillis = millis();
+   
+   if (Serial2.available()){                      
+    com2 = Serial2.read();                   // Guardar lo leído en Message
+    Serial.write(com2);                     // Escribir lo que se recibe
  
+  delay(4);
+  if(com2 == 0){                          // Recibe un 0
+      start2 = 1;                 //Start2
+  }
+    if(com2 == 1){                          // Recibe un 1
+      up2 = 1;                 //Up2
+
+  }
+
+    if(com2 == 2){                          // Recibe un 2
+      down2 = 1;                  //Down2
+  }
+
+   }
+//if (game_over == 1){   
   if (currentMillis - previousMillis >= interval) {
     previousMillis = currentMillis;
 
   if(start == 0)
   {
-    LCD_Bitmap(0, 0, 320, 240, fondo_trex);
+    //LCD_Bitmap(0, 0, 320, 240, fondo_trex);
     FillRect(0, 0, 320, 240, 0xffff);
     LCD_Bitmap(175, 125, 85, 56, logo);
     for(int x = 0; x <319; x++){
@@ -144,50 +216,50 @@ void loop() {
     LCD_Print(text3, 10, 120, 1 , 0xffff, 0x0000);
     LCD_Print(text4, 10, 190, 2, 0xffff, 0x0000);
     LCD_Print(text5, 60, 210, 2, 0xffff, 0x0000);
-    if (digitalRead(PA_7) == 0){
+    if (start1 == 1){
         start = 1;
         comenzar = 1;
         return;
      }
     for (int Nota = 0; Nota < 18; Nota++) 
     {
-     if (digitalRead(PA_7) == 0){
+     if (digitalRead(PA_6) == 0){
         start = 1;
         comenzar = 1;
         return;
      }
      int Duracion = 1000 / DuracionNotas[Nota];
-     if (digitalRead(PA_7) == 0){
+     if (digitalRead(PA_6) == 0){
         start = 1;
         comenzar = 1;
         return;
      }
      tone(PF_2, melody[Nota], Duracion); 
-    if (digitalRead(PA_7) == 0){
+     if (digitalRead(PA_6) == 0){
         start = 1;
         comenzar = 1;
         return;
      }
      int pausa = Duracion * 1.40;
-     if (digitalRead(PA_7) == 0){
+     if (digitalRead(PA_6) == 0){
         start = 1;
         comenzar = 1;
         return;
      }
         delay(pausa);
-    if (digitalRead(PA_7) == 0){
+     if (digitalRead(PA_6) == 0){
         start = 1;
         comenzar = 1;
         return;
      }
      noTone(PF_2);
-    if (digitalRead(PA_7) == 0){
+     if (digitalRead(PA_6) == 0){
         start = 1;
         comenzar = 1;
         return;
      }
     }
-    if (digitalRead(PA_7) == 0){
+     if (digitalRead(PA_6) == 0){
         start = 1;
         comenzar = 1;
         return;
@@ -209,7 +281,7 @@ void loop() {
     }
     estadoboton = digitalRead(boton);
     
-    if (digitalRead(PA_7) == 1 && digitalRead(PUSH1) == 1 && salto1 == 0 ){
+    if (digitalRead(PA_7) == 1 && digitalRead(PA_6) == 1){
         LCD_Sprite(0, 160, 44, 56, trex_c, 2, mov, 0, 0);
         FillRect(44, 160, 44, 56, 0xffff);
         FillRect(0, 155, 44, 5, 0xffff);
@@ -220,17 +292,87 @@ void loop() {
         LCD_Sprite(0, 183, 80, 32, trex_agachado, 2, mov, 0, 0); //para el dinosaurio corriendo parado
         FillRect(0, 160, 44, 23, 0xffff);
     }
-    if (digitalRead(PUSH1) == 0){
+    if (digitalRead(PA_6) == 0){
     LCD_Sprite(0, altura_trx, 44, 56, trex_c, 2, mov, 0, 0);
     salto();
     }
+   
     estadobotonviejo = estadoboton;
     movimiento();
- }    
+
+    //---------------------------------------------------------------------------------------------------------------------------------------
+//-----Control del ataque por medio de los botones-----------
+//---------------------------------------------------------------------------------------------------------------------------------------
+    //Para cuando J2 ataca con ave
+//    if (up2 == 1) {//Los botones estan config. como Pull-Ups
+//      yataque = ave.y; 
+//      ataque_activo = 1;
+//      colision1 = 1;
+//      a = ave.x;
+//      up2 = 0;  //esta condicion permite que salga del loop del ataque
+//      }  
+//    //se usa un ciclo para que el ataque vaya en linea recta desde la posicion de disparo
+//    if (ataque_activo == 1){
+//      int anim = (a / 32) % 3;
+//      LCD_Sprite(a , ave.y, ave.width, ave.height, aves, ave.columns, anim, 0, 0);
+//      FillRect(a+ ave.width , ave.y, ave.width, ave.height, 0xFFFF); //con esto se borra el rastro que deja el ataque poniendo un cuadrado
+//      //con esto se hace avanzar al ataque
+//      a -= 5;  //esto es lo que permite que el sprite se vaya moviendo.
+//      if (a > 0 -35){ //mientras el ataque sea mayor al ancho del Trex va a seguir avanzando
+//        ataque_activo = 1;
+//        }
+//      else {
+//        ataque_activo = 0;
+//        }
+//      }
+
+   //---------------------------------------------------------------------------------------------------------------------------- 
+    //----------------------------------Para cuando J2 ataca con cactus-----------------------------------------------------------
+    //Es la misma logica que en ataque de ave
+    if (down2 == 1) {
+      //int yataque2 = cactus.y;
+      ataque_activo2 = 1;
+      colision2 = 1;
+      c = cactus.x;
+      down2 = 0;        //esta condicion permite salair del loop de ataque 
+      }  
+
+    if (ataque_activo2 == 1){
+      int anim2 = (a / 32) % 3;
+      LCD_Sprite(c, cactus.y, cactus.width, cactus.height, cactus1, 1, anim2, 0, 0);
+      FillRect(c +cactus.width , cactus.y, cactus.width , cactus.height, 0xFFFF); 
+      c -= 5;  
+      if (c > 0 - cactus.width){ 
+        ataque_activo2 = 1;
+        }
+      else {
+        ataque_activo2 = 0;
+        }
+    }
+
+          if (colision2  == 1 ) {
+        int h = altura_trx - cactus.y; //se obtiene la posicion en el eje Y de dinosaurio respecto a ataque cactus
+        int d = altura_trx - cactus.x; //se obtiene la posicion en el eje X del dinosaurio respecto a cactus
+        int r = c - trex.width ; //se obtiene la posicion en el eje X del dinosaurio + su ancho respecto al Ataque de cactus
+        int hit2 = 0; //sirve para saber si el ataque impacto o no al dinosaurio
+        if ((r <= 0) & (d <= 0)) {
+          hit2++; //para acertar el ataque el jugador viendo hacia la izquierda
+        }
+        //ambas distancias tienen que ser negativas.
+        if ((((h < cactus.height) & (h >= 0)) | (h <= 0) & (h > -21)) & (hit2 == 1)); //para acertar el personaje atacado
+        //tiene que estar como máximo 29 unidades arriba del ataque y 21 por debajo del ataque
+        //game_over = 1;
+  
+        if (hit2 == 1) {
+          colision2 = 0;
+        }
+      }
+ }
+//}    
 }
-//***************************************************************************************************************************************
+//*********************************************
 // Función para inicializar LCD
-//***************************************************************************************************************************************
+//*********************************************
 void LCD_Init(void) {
   pinMode(LCD_RST, OUTPUT);
   pinMode(LCD_CS, OUTPUT);
@@ -240,9 +382,9 @@ void LCD_Init(void) {
   for (uint8_t i = 0; i < 8; i++){
     pinMode(DPINS[i], OUTPUT);
   }
-  //****************************************
+  //**************
   // Secuencia de Inicialización
-  //****************************************
+  //**************
   digitalWrite(LCD_CS, HIGH);
   digitalWrite(LCD_RS, HIGH);
   digitalWrite(LCD_WR, HIGH);
@@ -254,35 +396,35 @@ void LCD_Init(void) {
   digitalWrite(LCD_RST, HIGH);
   delay(150);
   digitalWrite(LCD_CS, LOW);
-  //****************************************
+  //**************
   LCD_CMD(0xE9);  // SETPANELRELATED
   LCD_DATA(0x20);
-  //****************************************
+  //**************
   LCD_CMD(0x11); // Exit Sleep SLEEP OUT (SLPOUT)
   delay(100);
-  //****************************************
+  //**************
   LCD_CMD(0xD1);    // (SETVCOM)
   LCD_DATA(0x00);
   LCD_DATA(0x71);
   LCD_DATA(0x19);
-  //****************************************
+  //**************
   LCD_CMD(0xD0);   // (SETPOWER) 
   LCD_DATA(0x07);
   LCD_DATA(0x01);
   LCD_DATA(0x08);
-  //****************************************
+  //**************
   LCD_CMD(0x36);  // (MEMORYACCESS)
   LCD_DATA(0x40|0x80|0x20|0x08); // LCD_DATA(0x19);
-  //****************************************
+  //**************
   LCD_CMD(0x3A); // Set_pixel_format (PIXELFORMAT)
   LCD_DATA(0x05); // color setings, 05h - 16bit pixel, 11h - 3bit pixel
-  //****************************************
+  //**************
   LCD_CMD(0xC1);    // (POWERCONTROL2)
   LCD_DATA(0x10);
   LCD_DATA(0x10);
   LCD_DATA(0x02);
   LCD_DATA(0x02);
-  //****************************************
+  //**************
   LCD_CMD(0xC0); // Set Default Gamma (POWERCONTROL1)
   LCD_DATA(0x00);
   LCD_DATA(0x35);
@@ -290,14 +432,14 @@ void LCD_Init(void) {
   LCD_DATA(0x00);
   LCD_DATA(0x01);
   LCD_DATA(0x02);
-  //****************************************
+  //**************
   LCD_CMD(0xC5); // Set Frame Rate (VCOMCONTROL1)
   LCD_DATA(0x04); // 72Hz
-  //****************************************
+  //**************
   LCD_CMD(0xD2); // Power Settings  (SETPWRNORMAL)
   LCD_DATA(0x01);
   LCD_DATA(0x44);
-  //****************************************
+  //**************
   LCD_CMD(0xC8); //Set Gamma  (GAMMASET)
   LCD_DATA(0x04);
   LCD_DATA(0x67);
@@ -314,13 +456,13 @@ void LCD_Init(void) {
   LCD_DATA(0x08);
   LCD_DATA(0x80);
   LCD_DATA(0x00);
-  //****************************************
+  //**************
   LCD_CMD(0x2A); // Set_column_address 320px (CASET)
   LCD_DATA(0x00);
   LCD_DATA(0x00);
   LCD_DATA(0x01);
   LCD_DATA(0x3F);
-  //****************************************
+  //**************
   LCD_CMD(0x2B); // Set_page_address 480px (PASET)
   LCD_DATA(0x00);
   LCD_DATA(0x00);
@@ -337,27 +479,27 @@ void LCD_Init(void) {
   LCD_CMD(ILI9341_DISPON);    //Display on
   digitalWrite(LCD_CS, HIGH);
 }
-//***************************************************************************************************************************************
+//*********************************************
 // Función para enviar comandos a la LCD - parámetro (comando)
-//***************************************************************************************************************************************
+//*********************************************
 void LCD_CMD(uint8_t cmd) {
   digitalWrite(LCD_RS, LOW);
   digitalWrite(LCD_WR, LOW);
   GPIO_PORTB_DATA_R = cmd;
   digitalWrite(LCD_WR, HIGH);
 }
-//***************************************************************************************************************************************
+//*********************************************
 // Función para enviar datos a la LCD - parámetro (dato)
-//***************************************************************************************************************************************
+//*********************************************
 void LCD_DATA(uint8_t data) {
   digitalWrite(LCD_RS, HIGH);
   digitalWrite(LCD_WR, LOW);
   GPIO_PORTB_DATA_R = data;
   digitalWrite(LCD_WR, HIGH);
 }
-//***************************************************************************************************************************************
+//*********************************************
 // Función para definir rango de direcciones de memoria con las cuales se trabajara (se define una ventana)
-//***************************************************************************************************************************************
+//*********************************************
 void SetWindows(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2) {
   LCD_CMD(0x2a); // Set_column_address 4 parameters
   LCD_DATA(x1 >> 8);
@@ -371,9 +513,9 @@ void SetWindows(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int 
   LCD_DATA(y2);   
   LCD_CMD(0x2c); // Write_memory_start
 }
-//***************************************************************************************************************************************
+//*********************************************
 // Función para borrar la pantalla - parámetros (color)
-//***************************************************************************************************************************************
+//*********************************************
 void LCD_Clear(unsigned int c){  
   unsigned int x, y;
   LCD_CMD(0x02c); // write_memory_start
@@ -387,9 +529,9 @@ void LCD_Clear(unsigned int c){
     }
   digitalWrite(LCD_CS, HIGH);
 } 
-//***************************************************************************************************************************************
+//*********************************************
 // Función para dibujar una línea horizontal - parámetros ( coordenada x, cordenada y, longitud, color)
-//*************************************************************************************************************************************** 
+//********************************************* 
 void H_line(unsigned int x, unsigned int y, unsigned int l, unsigned int c) {  
   unsigned int i, j;
   LCD_CMD(0x02c); //write_memory_start
@@ -404,9 +546,9 @@ void H_line(unsigned int x, unsigned int y, unsigned int l, unsigned int c) {
   }
   digitalWrite(LCD_CS, HIGH);
 }
-//***************************************************************************************************************************************
+//*********************************************
 // Función para dibujar una línea vertical - parámetros ( coordenada x, cordenada y, longitud, color)
-//*************************************************************************************************************************************** 
+//********************************************* 
 void V_line(unsigned int x, unsigned int y, unsigned int l, unsigned int c) {  
   unsigned int i,j;
   LCD_CMD(0x02c); //write_memory_start
@@ -421,18 +563,18 @@ void V_line(unsigned int x, unsigned int y, unsigned int l, unsigned int c) {
   }
   digitalWrite(LCD_CS, HIGH);  
 }
-//***************************************************************************************************************************************
+//*********************************************
 // Función para dibujar un rectángulo - parámetros ( coordenada x, cordenada y, ancho, alto, color)
-//***************************************************************************************************************************************
+//*********************************************
 void Rect(unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int c) {
   H_line(x  , y  , w, c);
   H_line(x  , y+h, w, c);
   V_line(x  , y  , h, c);
   V_line(x+w, y  , h, c);
 }
-//***************************************************************************************************************************************
+//*********************************************
 // Función para dibujar un rectángulo relleno - parámetros ( coordenada x, cordenada y, ancho, alto, color)
-//***************************************************************************************************************************************
+//*********************************************
 void FillRect(unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int c) {
   LCD_CMD(0x02c); // write_memory_start
   digitalWrite(LCD_RS, HIGH);
@@ -453,9 +595,9 @@ void FillRect(unsigned int x, unsigned int y, unsigned int w, unsigned int h, un
   }
   digitalWrite(LCD_CS, HIGH);
 }
-//***************************************************************************************************************************************
+//*********************************************
 // Función para dibujar texto - parámetros ( texto, coordenada x, cordenada y, color, background) 
-//***************************************************************************************************************************************
+//*********************************************
 void LCD_Print(String text, int x, int y, int fontSize, int color, int background) {
   int fontXSize ;
   int fontYSize ;
@@ -504,9 +646,9 @@ void LCD_Print(String text, int x, int y, int fontSize, int color, int backgroun
     digitalWrite(LCD_CS, HIGH);
   }
 }
-//***************************************************************************************************************************************
+//*********************************************
 // Función para dibujar una imagen a partir de un arreglo de colores (Bitmap) Formato (Color 16bit R 5bits G 6bits B 5bits)
-//***************************************************************************************************************************************
+//*********************************************
 void LCD_Bitmap(unsigned int x, unsigned int y, unsigned int width, unsigned int height, unsigned char bitmap[]){  
   LCD_CMD(0x02c); // write_memory_start
   digitalWrite(LCD_RS, HIGH);
@@ -529,9 +671,9 @@ void LCD_Bitmap(unsigned int x, unsigned int y, unsigned int width, unsigned int
   }
   digitalWrite(LCD_CS, HIGH);
 }
-//***************************************************************************************************************************************
+//*********************************************
 // Función para dibujar una imagen sprite - los parámetros columns = número de imagenes en el sprite, index = cual desplegar, flip = darle vuelta
-//***************************************************************************************************************************************
+//*********************************************
 void LCD_Sprite(int x, int y, int width, int height, unsigned char bitmap[],int columns, int index, char flip, char offset){
   LCD_CMD(0x02c); // write_memory_start
   digitalWrite(LCD_RS, HIGH);

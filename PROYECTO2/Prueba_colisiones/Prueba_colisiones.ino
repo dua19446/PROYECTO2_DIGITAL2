@@ -121,20 +121,14 @@ void loop() {
   delay(4);
   if(com == 0){                          // Recibe un 1
       start1 = 1;                 // Start1
-      //song1();
-      //noTone(buzzerPin);
-      start1 = 0;
+
   }
     if(com == 1){                          // Recibe un 1
       up1 = 1;                 //Up1
-      //song();
-      //noTone(buzzerPin);
   }
 
     if(com == 2){                          // Recibe un 2
       down1 = 1;                  //Down1
-      //song();
-      //noTone(buzzerPin);
   }
 
    }
